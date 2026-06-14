@@ -1,25 +1,20 @@
-# ТПО Лабораторная работа 2, вариант 9123
+# TPO lab 2, variant 9123
 
-Система функций:
+Function system:
 
 ```text
 x <= 0: ((((cot(x) + sin(x)) + cot(x)) - cos(x)) / cos(x)) / sin(x)
 x > 0 : (((log10(x) / log3(x))^2)^2 + ((log5(x) + log10(x)) * log5(x))) * (log5(x) * log10(x))
 ```
 
-Базовые функции: `sin(x)` и `ln(x)`, реализованы через ряды.
-Остальные функции выражены через базовые зависимости.
+Base functions `sin(x)` and `ln(x)` are implemented through series.
+The remaining functions are expressed through these base dependencies.
 
-Запуск тестов:
+Integration tests use Mockito stubs and mock objects instead of CSV table stubs.
+Current test suite: 83 tests.
 
-```bash
-gradle test
-```
-
-Запуск main:
+Run tests:
 
 ```bash
-gradle run
+gradlew clean test
 ```
-
-Если плагин `application` не используется, запускайте класс `ru.itmo.tpo.lab2.app.Main` из IDE.
