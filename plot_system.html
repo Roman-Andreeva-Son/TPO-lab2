@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>System Graph</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        canvas {
+            border: 1px solid #333;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+<h2>График итоговой системы функций</h2>
+
+<p>Выбери файл <b>build/results/system.csv</b></p>
+
+<input type="file" id="fileInput" accept=".csv">
+<label>
+    Ограничение по Y:
+    <input type="number" id="yLimit" value="20">
+</label>
+<button onclick="drawFromFile()">Построить график</button>
+
+<br>
+
+<canvas id="canvas" width="1100" height="600"></canvas>
+
+<script>
+    let fileContent = "";
+
+    document.getElementById("fileInput").addEventListener("change", function (event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            fileContent = e.target.result;
+        };
+
+        reader.readAsText(file);
+    });
+
+    function drawFromFile() {
+        const yLimit = Number(document.getElementById("yLimit").value);
+
+        const rows = fileContent.trim().split(/\r?\n/).slice(1);
+
+        const points = [];
+
+        for (const row of rows) {
+            const parts = row.split(";");
+            const x = Number(parts[0]);
+            const y = Number(parts[1]);
+
+            if (!Number.isFinite(x) || !Number.isFinite(y)) {
+                continue;
+            }
+
+            if (Math.abs(y) > yLimit) {
+                points.push(null);
+                continue;
+            }
+
+            points.push({x, y});
+        }
+
+        draw(points, yLimit);
+    }
+
+    function draw(points, yLimit) {
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const width = canvas.width;
+        const height = canvas.height;
+
+        ctx.clearRect(0, 0, width, height);
+
+        const padding = 60;
+
+        const xMin = -10;
+        const xMax = 10;
+        const yMin = -yLimit;
+        const yMax = yLimit;
+
+        function sx(x) {
+            return padding + (x - xMin) / (xMax - xMin) * (width - 2 * padding);
+        }
+
+        function sy(y) {
+            return height - padding - (y - yMin) / (yMax - yMin) * (height - 2 * padding);
+        }
+
+        // сетка
+        ctx.strokeStyle = "#ddd";
+        ctx.lineWidth = 1;
+
+        for (let x = xMin; x <= xMax; x += 1) {
+            ctx.beginPath();
+            ctx.moveTo(sx(x), padding);
+            ctx.lineTo(sx(x), height - padding);
+            ctx.stroke();
+        }
+
+        for (let y = yMin; y <= yMax; y += yLimit / 5) {
+            ctx.beginPath();
+            ctx.moveTo(padding, sy(y));
+            ctx.lineTo(width - padding, sy(y));
+            ctx.stroke();
+        }
+
+        // оси
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.moveTo(sx(0), padding);
+        ctx.lineTo(sx(0), height - padding);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(padding, sy(0));
+        ctx.lineTo(width - padding, sy(0));
+        ctx.stroke();
+
+        // подписи
+        ctx.fillStyle = "#000";
+        ctx.font = "16px Arial";
+        ctx.fillText("x", width - 40, sy(0) - 10);
+        ctx.fillText("f(x)", sx(0) + 10, 30);
+
+        ctx.font = "14px Arial";
+        ctx.fillText("Система функций, вариант 9123", width / 2 - 120, 25);
+
+        // график
+        ctx.strokeStyle = "#0066cc";
+        ctx.lineWidth = 2;
+
+        let started = false;
+
+        for (const point of points) {
+            if (point === null) {
+                started = false;
+                continue;
+            }
+
+            const px = sx(point.x);
+            const py = sy(point.y);
+
+            if (!started) {
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                started = true;
+            } else {
+                ctx.lineTo(px, py);
+            }
+        }
+
+        ctx.stroke();
+    }
+</script>
+</body>
+</html>

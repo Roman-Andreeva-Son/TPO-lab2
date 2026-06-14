@@ -1,0 +1,60 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'jacoco'
+}
+
+group = 'ru.itmo.tpo'
+version = '1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    testImplementation 'org.mockito:mockito-core:5.11.0'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+test {
+    useJUnitPlatform()
+
+    include '**/*Test.class'
+
+    jvmArgs '-Dfile.encoding=UTF-8'
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showStandardStreams = false
+    }
+}
+
+application {
+    mainClass = 'ru.itmo.tpo.lab2.app.Main'
+}
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+jacocoTestReport {
+    dependsOn test
+
+    executionData.setFrom(fileTree(layout.buildDirectory).include("jacoco/*.exec"))
+
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+
+        html.outputLocation = layout.buildDirectory.dir("reports/jacoco/test/html")
+    }
+}
